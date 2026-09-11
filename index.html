@@ -1,1 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Perfect Straw Position 🥤</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap');
 
+  :root {
+    --cup-blue: #4FC3F7;
+    --cup-dark: #0288D1;
+    --straw-red: #EF5350;
+    --straw-dark: #C62828;
+    --bg-light: #E3F2FD;
+    --bg-card: #ffffff;
+    --text-dark: #263238;
+    --text-mid: #546E7A;
+    --accent-green: #66BB6A;
+    --accent-yellow: #FFD54F;
+    --accent-orange: #FFA726;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 30px rgba(0,0,0,0.14);
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .bubbles {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .bubble {
+    position: absolute; bottom: -80px;
+    background: rgba(79,195,247,0.15);
+    border-radius: 50%;
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) scale(1); opacity: 0.6; }
+    100% { transform: translateY(-110vh) scale(0.3); opacity: 0; }
+  }
+
+  header {
+    position: relative; z-index: 1;
+    background: linear-gradient(135deg, var(--cup-dark), var(--cup-blue));
+    color: white; text-align: center;
+    padding: 50px 20px 60px;
+    clip-path: ellipse(80% 100% at 50% 0%);
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    margin-bottom: 8px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header p {
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+    opacity: 0.92; max-width: 650px; margin: 0 auto;
+  }
+  .cup-icon { font-size: 3.5rem; margin-bottom: 10px; display: block; animation: bob 2s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-10px); } }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 4px;
+    padding: 10px 12px;
+  }
+  nav a {
+    text-decoration: none; color: var(--text-mid);
+    padding: 8px 18px; border-radius: 30px;
+    font-weight: 700; font-size: 0.9rem;
+    transition: all 0.25s;
+  }
+  nav a:hover, nav a.active {
+    background: var(--cup-blue); color: white;
+  }
+
+  main { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 30px 16px 60px; }
+
+  section {
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+  section.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px 28px;
+    margin-bottom: 24px;
+    transition: box-shadow 0.3s;
+  }
+  .card:hover { box-shadow: var(--shadow-hover); }
+
+  h2 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--cup-dark);
+    margin-bottom: 14px;
+    font-size: 1.5rem;
+  }
+  h3 { color: var(--cup-dark); margin-bottom: 10px; }
+
+  .position-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .pos-card {
+    background: var(--bg-light);
+    border: 3px solid transparent;
+    border-radius: 14px;
+    padding: 18px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    user-select: none;
+  }
+  .pos-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+  .pos-card.selected {
+    border-color: var(--cup-dark);
+    background: #E1F5FE;
+    transform: scale(1.05);
+  }
+  .pos-card .icon { font-size: 2rem; margin-bottom: 6px; }
+  .pos-card .label { font-weight: 700; font-size: 0.92rem; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-weight: 700; margin-bottom: 5px;
+    color: var(--text-mid); font-size: 0.9rem;
+  }
+  .form-group input, .form-group select {
+    width: 100%; padding: 12px 14px;
+    border: 2px solid #CFD8DC; border-radius: 10px;
+    font-size: 1rem; font-family: inherit;
+    transition: border-color 0.2s;
+    background: #FAFAFA;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none; border-color: var(--cup-blue);
+    background: white;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px;
+    border: none; border-radius: 30px;
+    font-size: 1.05rem; font-weight: 700;
+    font-family: 'Fredoka One', cursive;
+    cursor: pointer;
+    transition: all 0.25s;
+    color: white;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--cup-dark), var(--cup-blue)); }
+  .btn-success { background: linear-gradient(135deg, #43A047, var(--accent-green)); }
+  .btn-danger  { background: linear-gradient(135deg, var(--straw-dark), var(--straw-red)); }
+  .btn-warning { background: linear-gradient(135deg, var(--accent-orange), #FF8F00); }
+  .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+
+  table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  th {
+    background: linear-gradient(135deg, var(--cup-dark), var(--cup-blue));
+    color: white; padding: 14px 12px;
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  td {
+    padding: 12px; text-align: center;
+    border-bottom: 1px solid #ECEFF1;
+    font-size: 0.92rem;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) { background: #F5F9FC; }
+  tr:hover { background: #E3F2FD; }
+  .rank-1 { background: #FFF9C4 !important; font-weight: 700; }
+
+  .winner-box {
+    text-align: center; padding: 36px 24px;
+    background: linear-gradient(135deg, #FFF8E1, #FFF9C4);
+    border: 3px dashed var(--accent-yellow);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+  }
+  .winner-box .trophy { font-size: 4rem; animation: bob 1.5s ease-in-out infinite; display: block; margin-bottom: 10px; }
+  .winner-box .title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem; color: var(--straw-dark);
+    margin-bottom: 6px;
+  }
+  .winner-box .name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem; color: var(--cup-dark);
+  }
+  .winner-box .subtitle {
+    color: var(--text-mid); margin-top: 14px;
+    font-style: italic; font-size: 0.95rem;
+  }
+
+  .chart-container {
+    position: relative;
+    width: 100%; max-width: 700px;
+    margin: 20px auto;
+  }
+  canvas { width: 100% !important; height: auto !important; }
+
+  .funny-footer {
+    text-align: center; padding: 40px 20px;
+    font-size: 1.1rem; color: var(--text-mid);
+    font-style: italic;
+  }
+  .funny-footer .big-emoji { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+    border-radius: 12px; padding: 18px; text-align: center;
+  }
+  .stat-card .num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem; color: var(--cup-dark);
+  }
+  .stat-card .lbl { font-size: 0.82rem; color: var(--text-mid); font-weight: 600; }
+
+  .info-box {
+    background: #E8F5E9; border-left: 4px solid var(--accent-green);
+    padding: 16px 20px; border-radius: 0 12px 12px 0;
+    margin-bottom: 20px;
+  }
+  .info-box strong { color: #2E7D32; }
+
+  .delete-btn {
+    background: none; border: none; color: var(--straw-red);
+    cursor: pointer; font-size: 1.1rem; padding: 4px;
+    transition: transform 0.2s;
+  }
+  .delete-btn:hover { transform: scale(1.3); }
+
+  footer {
+    position: relative; z-index: 1;
+    text-align: center; padding: 24px;
+    color: var(--text-mid); font-size: 0.85rem;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 22px 16px; }
+    .position-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .pos-card { padding: 14px 6px; }
+    .pos-card .icon { font-size: 1.6rem; }
+    .pos-card .label { font-size: 0.78rem; }
+    header { padding: 36px 16px 48px; }
+    nav a { padding: 6px 12px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+
+<header>
+  <span class="cup-icon">🥤</span>
+  <h1>The Perfect Straw Position</h1>
+  <p>A groundbreaking, Nobel-worthy scientific investigation into which position a straw should sit inside a cup.</p>
+</header>
+
+<nav id="nav">
+  <a href="#" data-section="home" class="active">🏠 Home</a>
+  <a href="#" data-section="experiment">🧪 Experiment</a>
+  <a href="#" data-section="results">📊 Results</a>
+  <a href="#" data-section="conclusion">🏆 Conclusion</a>
+</nav>
+
+<main>
+
+<!-- ==================== HOME ==================== -->
+<section id="sec-home" class="active">
+  <div class="card">
+    <h2>Welcome, Fellow Scientist! 🔬</h2>
+    <p>Have you ever wondered: <em>"Is the position of my straw actually affecting my drinking experience?"</em></p>
+    <p style="margin-top:10px;">Probably not. But we're going to answer it anyway.</p>
+
+    <div class="info-box" style="margin-top:20px;">
+      <strong>The Research Question:</strong><br>
+      <span style="font-size:1.05rem;">What is the optimal position and angle of a drinking straw inside a cup to maximize the ease of drinking?</span>
+    </div>
+
+    <h3 style="margin-top:20px;">The Hypothesis 🤔</h3>
+    <p>Some straw positions are more comfortable, efficient, and satisfying than others. We will prove this with <strong>science</strong>. (And data. Mostly data.)</p>
+
+    <h3 style="margin-top:20px;">What We're Testing 🧪</h3>
+    <ul style="padding-left:20px; margin-top:6px;">
+      <li><strong>7 straw positions:</strong> Centre, Left, Right, Front, Back, Diagonal, and Angled</li>
+      <li><strong>Key measurements:</strong> Water drunk, time taken, attempts needed</li>
+      <li><strong>Output:</strong> An "Ease of Drinking Score" for each position</li>
+    </ul>
+
+    <h3 style="margin-top:20px;">Why Does This Matter? 🤷</h3>
+    <p>It doesn't. But the data will be beautiful.</p>
+
+    <div class="btn-row" style="justify-content:center; margin-top:24px;">
+      <button class="btn btn-primary" onclick="goSection('experiment')">Start Experiment 🧪</button>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <p style="font-size:3rem;">🥤 ➡️ 🥤 ➡️ 🥤</p>
+    <h3>How It Works</h3>
+    <p style="max-width:500px; margin:0 auto;">Select a straw position → Enter your measurements → Calculate the score → Find the perfect position!</p>
+  </div>
+</section>
+
+<!-- ==================== EXPERIMENT ==================== -->
+<section id="sec-experiment">
+  <div class="card">
+    <h2>Step 1: Choose Straw Position 📍</h2>
+    <p>Select the position you are testing:</p>
+
+    <div class="position-grid" id="positionGrid">
+      <div class="pos-card" data-pos="Centre" onclick="selectPos(this)">
+        <div class="icon">🎯</div><div class="label">Centre</div>
+      </div>
+      <div class="pos-card" data-pos="Left" onclick="selectPos(this)">
+        <div class="icon">⬅️</div><div class="label">Left Side</div>
+      </div>
+      <div class="pos-card" data-pos="Right" onclick="selectPos(this)">
+        <div class="icon">➡️</div><div class="label">Right Side</div>
+      </div>
+      <div class="pos-card" data-pos="Front" onclick="selectPos(this)">
+        <div class="icon">🔽</div><div class="label">Front</div>
+      </div>
+      <div class="pos-card" data-pos="Back" onclick="selectPos(this)">
+        <div class="icon">🔼</div><div class="label">Back</div>
+      </div>
+      <div class="pos-card" data-pos="Diagonal" onclick="selectPos(this)">
+        <div class="icon">↗️</div><div class="label">Diagonal</div>
+      </div>
+      <div class="pos-card" data-pos="Angled" onclick="selectPos(this)">
+        <div class="icon">📐</div><div class="label">Angled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Step 2: Enter Measurements 📏</h2>
+
+    <div class="form-group">
+      <label>Straw Angle (degrees from vertical)</label>
+      <input type="number" id="inpAngle" min="0" max="90" placeholder="e.g. 0 (straight up)">
+    </div>
+    <div class="form-group">
+      <label>Amount of Water Drunk (ml)</label>
+      <input type="number" id="inpAmount" min="0" step="1" placeholder="e.g. 200">
+    </div>
+    <div class="form-group">
+      <label>Time Taken to Drink (seconds)</label>
+      <input type="number" id="inpTime" min="0.1" step="0.1" placeholder="e.g. 12.5">
+    </div>
+    <div class="form-group">
+      <label>Number of Attempts / Movements Needed</label>
+      <input type="number" id="inpAttempts" min="1" placeholder="e.g. 3">
+    </div>
+    <div class="form-group">
+      <label>Comfort Rating (1 = terrible, 5 = amazing)</label>
+      <input type="number" id="inpComfort" min="1" max="5" placeholder="e.g. 4">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="addTrial()">Add Trial ➕</button>
+      <button class="btn btn-warning" onclick="clearForm()">Clear Fields 🗑️</button>
+    </div>
+  </div>
+
+  <div class="card" id="trialLog" style="display:none;">
+    <h2>Trials Logged 📋</h2>
+    <div id="trialLogContent"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goSection('results')">See Results 📊</button>
+      <button class="btn btn-danger" onclick="clearAllTrials()">Clear All Data 🗑️</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== RESULTS ==================== -->
+<section id="sec-results">
+  <div class="card" id="statsCard">
+    <h2>Experiment Statistics 📈</h2>
+    <div class="stat-row" id="statRow"></div>
+  </div>
+
+  <div class="card">
+    <h2>Results Table 📋</h2>
+    <div style="overflow-x:auto;">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Position</th>
+            <th>Avg Speed (ml/s)</th>
+            <th>Avg Attempts</th>
+            <th>Avg Comfort</th>
+            <th>Ease Score</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Visual Comparison 📊</h2>
+    <div class="chart-container">
+      <canvas id="scoreChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card" id="winnerSection" style="display:none;">
+    <div class="winner-box">
+      <span class="trophy">🏆</span>
+      <div class="title">The Scientifically Proven Perfect Straw Position Is:</div>
+      <div class="name" id="winnerName"></div>
+      <div class="subtitle">Published in the Journal of Completely Unnecessary Research, Vol. 42, Issue 1.</div>
+    </div>
+  </div>
+
+  <div class="funny-footer">
+    <span class="big-emoji">🥤🏆🎉</span>
+    After extensive scientific investigation, we discovered the best position for a straw.<br>
+    This discovery has absolutely no significant practical value.
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-primary" onclick="goSection('experiment')">Add More Data 🧪</button>
+      <button class="btn btn-warning" onclick="exportCSV()">Export CSV 📥</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CONCLUSION ==================== -->
+<section id="sec-conclusion">
+  <div class="card" id="conclusionContent">
+    <h2>Final Conclusion 🎓</h2>
+    <p>Complete the experiment to reveal the conclusion!</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goSection('experiment')">Start Experiment 🧪</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  The Perfect Straw Position™ — A Student Research Project &bull; No straws were harmed in the making of this website.
+</footer>
+
+<script>
+/* ===== DATA ===== */
+const POSITIONS = ['Centre','Left','Right','Front','Back','Diagonal','Angled'];
+const POS_ICONS = {Centre:'🎯',Left:'⬅️',Right:'➡️',Front:'🔽',Back:'🔼',Diagonal:'↗️',Angled:'📐'};
+let trials = JSON.parse(localStorage.getItem('strawTrials') || '[]');
+let selectedPos = null;
+
+/* ===== NAVIGATION ===== */
+document.querySelectorAll('nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    goSection(a.dataset.section);
+  });
+});
+
+function goSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.dataset.section === id));
+  window.scrollTo({top: 0, behavior:'smooth'});
+  if (id === 'results') buildResults();
+  if (id === 'conclusion') buildConclusion();
+}
+
+/* ===== POSITION SELECTION ===== */
+function selectPos(el) {
+  document.querySelectorAll('.pos-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPos = el.dataset.pos;
+}
+
+/* ===== TRIAL MANAGEMENT ===== */
+function addTrial() {
+  if (!selectedPos) return alert('Please select a straw position first!');
+  const amount = parseFloat(document.getElementById('inpAmount').value);
+  const time  = parseFloat(document.getElementById('inpTime').value);
+  const attempts = parseInt(document.getElementById('inpAttempts').value);
+  const comfort  = parseInt(document.getElementById('inpComfort').value);
+  const angle    = parseFloat(document.getElementById('inpAngle').value) || 0;
+
+  if (!amount || !time || !attempts || !comfort) return alert('Please fill in all measurement fields!');
+
+  trials.push({
+    id: Date.now(),
+    position: selectedPos,
+    angle, amount, time, attempts, comfort,
+    date: new Date().toLocaleDateString()
+  });
+  saveTrials();
+  clearForm();
+  renderTrialLog();
+}
+
+function removeTrial(id) {
+  trials = trials.filter(t => t.id !== id);
+  saveTrials();
+  renderTrialLog();
+}
+
+function clearForm() {
+  ['inpAngle','inpAmount','inpTime','inpAttempts','inpComfort'].forEach(id => document.getElementById(id).value = '');
+}
+
+function clearAllTrials() {
+  if (!confirm('Delete ALL trial data? This cannot be undone.')) return;
+  trials = [];
+  saveTrials();
+  renderTrialLog();
+}
+
+function saveTrials() { localStorage.setItem('strawTrials', JSON.stringify(trials)); }
+
+function renderTrialLog() {
+  const box = document.getElementById('trialLog');
+  const cont = document.getElementById('trialLogContent');
+  if (!trials.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  let html = '<table><thead><tr><th>Position</th><th>Angle°</th><th>ml</th><th>Sec</th><th>Attempts</th><th>Comfort</th><th>Date</th><th></th></tr></thead><tbody>';
+  trials.forEach(t => {
+    html += `<tr>
+      <td>${POS_ICONS[t.position]||''} ${t.position}</td>
+      <td>${t.angle}°</td>
+      <td>${t.amount}</td>
+      <td>${t.time}s</td>
+      <td>${t.attempts}</td>
+      <td>${t.comfort}/5</td>
+      <td>${t.date}</td>
+      <td><button class="delete-btn" onclick="removeTrial(${t.id})">✕</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  cont.innerHTML = html;
+}
+renderTrialLog();
+
+/* ===== RESULTS ===== */
+function calcScore(t) {
+  const speed = t.amount / t.time;
+  return (speed * 0.4) + ((6 - t.attempts) * 0.3) + (t.comfort * 0.3);
+}
+
+function buildResults() {
+  if (!trials.length) {
+    document.getElementById('resultsBody').innerHTML = '<tr><td colspan="7" style="padding:30px; color:var(--text-mid);">No data yet! Go run some experiments first. 🧪</td></tr>';
+    document.getElementById('winnerSection').style.display = 'none';
+    document.getElementById('statRow').innerHTML = '';
+    return;
+  }
+
+  const grouped = {};
+  POSITIONS.forEach(p => grouped[p] = []);
+  trials.forEach(t => { if (grouped[t.position]) grouped[t.position].push(t); });
+
+  const summaries = POSITIONS.filter(p => grouped[p].length).map(p => {
+    const ts = grouped[p];
+    const avgSpeed    = ts.reduce((s,t) => s + t.amount/t.time, 0) / ts.length;
+    const avgAttempts = ts.reduce((s,t) => s + t.attempts, 0) / ts.length;
+    const avgComfort  = ts.reduce((s,t) => s + t.comfort, 0) / ts.length;
+    const avgAngle    = ts.reduce((s,t) => s + t.angle, 0) / ts.length;
+    const score       = ts.reduce((s,t) => s + calcScore(t), 0) / ts.length;
+    return { position: p, trials: ts.length, avgSpeed, avgAttempts, avgComfort, avgAngle, score };
+  });
+
+  summaries.sort((a,b) => b.score - a.score);
+
+  // Stats
+  const totalTrials = trials.length;
+  const totalMl = trials.reduce((s,t) => s + t.amount, 0);
+  const totalTime = trials.reduce((s,t) => s + t.time, 0);
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-card"><div class="num">${totalTrials}</div><div class="lbl">Total Trials</div></div>
+    <div class="stat-card"><div class="num">${summaries.length}</div><div class="lbl">Positions Tested</div></div>
+    <div class="stat-card"><div class="num">${totalMl}ml</div><div class="lbl">Total Water Drunk</div></div>
+    <div class="stat-card"><div class="num">${totalTime.toFixed(1)}s</div><div class="lbl">Total Time Invested</div></div>
+  `;
+
+  // Table
+  let html = '';
+  summaries.forEach((s, i) => {
+    html += `<tr class="${i===0?'rank-1':''}">
+      <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
+      <td>${POS_ICONS[s.position]} ${s.position}</td>
+      <td>${s.avgSpeed.toFixed(2)}</td>
+      <td>${s.avgAttempts.toFixed(1)}</td>
+      <td>${s.avgComfort.toFixed(1)}/5</td>
+      <td><strong>${s.score.toFixed(2)}</strong></td>
+      <td>${s.trials} trial${s.trials>1?'s':''}</td>
+    </tr>`;
+  });
+  document.getElementById('resultsBody').innerHTML = html;
+
+  // Winner
+  document.getElementById('winnerSection').style.display = 'block';
+  document.getElementById('winnerName').textContent = `${POS_ICONS[summaries[0].position]} ${summaries[0].position} Position!`;
+
+  // Chart
+  drawChart(summaries);
+}
+
+/* ===== CHART (pure canvas, no library) ===== */
+function drawChart(data) {
+  const canvas = document.getElementById('scoreChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = Math.max(300, Math.min(400, W * 0.55));
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = {top: 40, right: 20, bottom: 70, left: 50};
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+  const maxScore = Math.max(...data.map(d => d.score), 1) * 1.15;
+  const barW = Math.min(60, (cw / data.length) * 0.55);
+  const gap = cw / data.length;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#E0E0E0'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.top + ch - (ch * (i / 5));
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#90A4AE'; ctx.font = '12px Nunito'; ctx.textAlign = 'right';
+    ctx.fillText((maxScore * i / 5).toFixed(1), pad.left - 8, y + 4);
+  }
+
+  // Bars
+  const colors = ['#4FC3F7','#42A5F5','#2196F3','#1E88E5','#1976D2','#1565C0','#0D47A1'];
+  data.forEach((d, i) => {
+    const x = pad.left + gap * i + (gap - barW) / 2;
+    const h = (d.score / maxScore) * ch;
+    const y = pad.top + ch - h;
+
+    // Bar gradient
+    const grad = ctx.createLinearGradient(x, y, x, pad.top + ch);
+    grad.addColorStop(0, colors[i % colors.length]);
+    grad.addColorStop(1, '#B3E5FC');
+    ctx.fillStyle = grad;
+    roundRect(ctx, x, y, barW, h, 6);
+
+    // Score label
+    ctx.fillStyle = '#263238'; ctx.font = 'bold 13px Nunito'; ctx.textAlign = 'center';
+    ctx.fillText(d.score.toFixed(2), x + barW / 2, y - 8);
+
+    // Position label
+    ctx.fillStyle = '#546E7A'; ctx.font = '12px Nunito';
+    ctx.save();
+    ctx.translate(x + barW / 2, pad.top + ch + 16);
+    ctx.fillText(POS_ICONS[d.position] || '', 0, 0);
+    ctx.fillText(d.position, 0, 18);
+    ctx.restore();
+
+    // Crown for winner
+    if (i === 0) {
+      ctx.font = '20px serif';
+      ctx.fillText('👑', x + barW / 2, y - 26);
+    }
+  });
+
+  // Y-axis label
+  ctx.save();
+  ctx.fillStyle = '#546E7A'; ctx.font = 'bold 13px Nunito';
+  ctx.translate(14, pad.top + ch / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillText('Ease of Drinking Score', 0, 0);
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/* ===== CONCLUSION ===== */
+function buildConclusion() {
+  const cont = document.getElementById('conclusionContent');
+  if (!trials.length) {
+    cont.innerHTML = `<h2>Final Conclusion 🎓</h2><p>No data collected yet! Run some experiments first.</p>
+      <div class="btn-row"><button class="btn btn-primary" onclick="goSection('experiment')">Start Experiment 🧪</button></div>`;
+    return;
+  }
+
+  const grouped = {};
+  POSITIONS.forEach(p => grouped[p] = []);
+  trials.forEach(t => { if (grouped[t.position]) grouped[t.position].push(t); });
+
+  let best = null, bestScore = -1;
+  POSITIONS.forEach(p => {
+    if (!grouped[p].length) return;
+    const avg = grouped[p].reduce((s,t) => s + calcScore(t), 0) / grouped[p].length;
+    if (avg > bestScore) { bestScore = avg; best = p; }
+  });
+
+  const msgs = [
+    "This changes everything. Except it doesn't. At all.",
+    "Publishing this in Nature immediately.",
+    "The straw industry will never be the same.",
+    "We expect the Nobel Prize committee to contact us any day now.",
+    "Groundbreaking. Life-changing. Utterly pointless.",
+    "Future generations will study this.",
+  ];
+  const msg = msgs[Math.floor(Math.random() * msgs.length)];
+
+  cont.innerHTML = `
+    <h2>Final Conclusion 🎓</h2>
+    <div class="winner-box">
+      <span class="trophy">🏆</span>
+      <div class="title">The Scientifically Proven Perfect Straw Position Is:</div>
+      <div class="name">${POS_ICONS[best]} ${best} Position!</div>
+      <div class="subtitle">With an Ease of Drinking Score of ${bestScore.toFixed(2)}</div>
+    </div>
+    <div class="card" style="background:#F3E5F5; border-left:4px solid #AB47BC;">
+      <p><strong>📝 Research Summary:</strong></p>
+      <p>We tested ${Object.values(grouped).reduce((s,a)=>s+a.length,0)} trials across ${Object.values(grouped).filter(a=>a.length).length} positions. After rigorous (and completely unnecessary) analysis, the <strong>${best} position</strong> emerged as the optimal straw configuration.</p>
+    </div>
+    <div class="funny-footer">
+      <span class="big-emoji">🥳</span>
+      "${msg}"<br><br>
+      After extensive scientific investigation, we discovered the best position for a straw.<br>
+      This discovery has absolutely no significant practical value.
+    </div>
+    <div style="text-align:center;">
+      <p style="font-size:3rem;">🥤👑🎉🎓</p>
+      <p style="color:var(--text-mid); font-style:italic;">Thank you for participating in this very important research.</p>
+    </div>
+  `;
+}
+
+/* ===== EXPORT ===== */
+function exportCSV() {
+  if (!trials.length) return alert('No data to export!');
+  let csv = 'Position,Angle (deg),Amount (ml),Time (sec),Attempts,Comfort,Score,Date\n';
+  trials.forEach(t => {
+    csv += `${t.position},${t.angle},${t.amount},${t.time},${t.attempts},${t.comfort},${calcScore(t).toFixed(2)},${t.date}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'straw_experiment_data.csv';
+  a.click();
+}
+
+/* ===== BUBBLES ===== */
+(function createBubbles() {
+  const c = document.getElementById('bubbles');
+  for (let i = 0; i < 15; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = Math.random() * 40 + 15;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.animationDuration = (Math.random() * 8 + 6) + 's';
+    b.style.animationDelay = (Math.random() * 6) + 's';
+    c.appendChild(b);
+  }
+})();
+
+/* ===== RESIZE HANDLER ===== */
+window.addEventListener('resize', () => {
+  if (document.getElementById('sec-results').classList.contains('active')) buildResults();
+});
+</script>
+</body>
+</html>
